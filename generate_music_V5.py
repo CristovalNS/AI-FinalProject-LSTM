@@ -3,7 +3,7 @@ import pickle
 import numpy as np
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import LSTM, Dense, Dropout
-from music21 import stream, note, instrument
+from music21 import stream, note, instrument, tempo
 import random
 
 
@@ -28,7 +28,7 @@ n_unique_notes = 576  # Adjust this based on your unique notes
 model = build_model(sequence_length, n_unique_notes)
 
 # Load the weights from the latest checkpoint
-latest_checkpoint = '/Users/cristovalneosasono/AI_FinalProject_V2/checkpoints/weights-epoch-05-loss-1.7863-acc-0.5304.weights.h5'
+latest_checkpoint = '/Users/cristovalneosasono/AI_FinalProject_V2/checkpoints_E30/weights-epoch-05-loss-1.7863-acc-0.5304.weights.h5'
 model.load_weights(latest_checkpoint)
 
 # Step 4: Load the Mapping Data (int to note)
@@ -60,7 +60,7 @@ start_sequence = X[np.random.randint(0, len(X))]
 
 # Define the C Major scale notes explicitly (no sharps or flats)
 c_major_notes = ['C', 'D', 'E', 'F', 'G', 'A', ]
-
+# c_major_notes = ['F', 'G', 'A', 'Bb', 'C', 'D', 'E'] # F Major rn
 
 def generate_music(model, start_sequence, int_to_note, rest_indices, n_generate=100, temperature=1.0, max_interval=5):
     generated_notes = []
@@ -130,8 +130,12 @@ def generate_music(model, start_sequence, int_to_note, rest_indices, n_generate=
     return generated_notes, generated_durations
 
 
-def create_midi(generated_notes, generated_durations, output_file='generated_music_melody.mid'):
+def create_midi(generated_notes, generated_durations, output_file='generated_music_melody.mid', tempo_bpm=120):
     output_stream = stream.Stream()
+
+    # Add tempo to the stream
+    output_tempo = tempo.MetronomeMark(number=tempo_bpm)
+    output_stream.append(output_tempo)
 
     for i, note_name in enumerate(generated_notes):
         duration = generated_durations[i]
@@ -158,6 +162,11 @@ generated_notes, generated_durations = generate_music(
 )
 
 # Step 2: Create the MIDI file from the generated notes
-create_midi(generated_notes, generated_durations, output_file='generated_music_result/generated_music_melody.mid')
+create_midi(
+    generated_notes,
+    generated_durations,
+    output_file='generated_music_result/generated_music_melody_E30_25-11-24.mid',
+    tempo_bpm=80  # Adjust the tempo here
+)
 
-print("Music generation complete. Saved to 'generated_music_melody.mid'.")
+print("Music generation complete. Saved to 'generated_music_melody_21-11-24.mid'.")
